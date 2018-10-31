@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.cluster.support.FailoverCluster;
  */
 @SPI(FailoverCluster.NAME)
 public interface Cluster {
-
+//
     /**
      * Merge the directory invokers to a virtual invoker.
      *

@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  *
  * @export
  */
-public abstract class AbstractConfig implements Serializable {
+public abstract class  AbstractConfig implements Serializable {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractConfig.class);
     private static final long serialVersionUID = 4267533505537413570L;
@@ -205,6 +205,7 @@ public abstract class AbstractConfig implements Serializable {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
+                            // TODO 为什么拼接defualt
                             String pre = parameters.get(Constants.DEFAULT_KEY + "." + key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;

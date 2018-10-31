@@ -24,7 +24,7 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI("spring")
 public interface Container {
 
-    /**
+    /**2
      * start.
      */
     void start();

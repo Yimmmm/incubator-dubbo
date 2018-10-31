@@ -27,9 +27,9 @@ import org.apache.dubbo.rpc.Invoker;
 public abstract class AbstractExporter<T> implements Exporter<T> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    // Invoker 对象
     private final Invoker<T> invoker;
-
+    // 是否取消服务暴露
     private volatile boolean unexported = false;
 
     public AbstractExporter(Invoker<T> invoker) {
@@ -47,6 +47,9 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
         return invoker;
     }
 
+    /**
+     *  取消服务暴露
+     */
     @Override
     public void unexport() {
         if (unexported) {

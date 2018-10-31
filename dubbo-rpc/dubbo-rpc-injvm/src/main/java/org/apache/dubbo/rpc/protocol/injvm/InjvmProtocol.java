@@ -37,6 +37,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     public static final String NAME = Constants.LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
+    // 单例，在Dubbo SPI中被初始化，有且仅有一次
     private static InjvmProtocol INSTANCE;
 
     public InjvmProtocol() {
@@ -83,6 +84,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
+        // 创建 InjvmExporter 对象
         return new InjvmExporter<T>(invoker, invoker.getUrl().getServiceKey(), exporterMap);
     }
 

@@ -57,7 +57,7 @@ import java.util.Set;
  * RegistryDirectory
  *
  */
-public class RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
+public class  RegistryDirectory<T> extends AbstractDirectory<T> implements NotifyListener {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
