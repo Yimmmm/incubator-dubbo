@@ -232,7 +232,9 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (interfaceName == null || interfaceName.length() == 0) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
+        // 拼接属性配置（环境变量+properties 属性）到providerConfig
         checkDefault();
+        // 从providerConfig对象中，读取application，module，registries，monitor，Protocol配置信息
         if (provider != null) {
             if (application == null) {
                 application = provider.getApplication();
@@ -250,6 +252,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 protocols = provider.getProtocols();
             }
         }
+        // 从moduleConfig对象中，读取registries，monitor配置对象
         if (module != null) {
             if (registries == null) {
                 registries = module.getRegistries();
@@ -258,6 +261,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 monitor = module.getMonitor();
             }
         }
+        // 从applicationConfig对象中读取 registries，monitor配置对象
         if (application != null) {
             if (registries == null) {
                 registries = application.getRegistries();
@@ -297,6 +301,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceName);
             }
         }
+        // 处理服务接口客户端本地代理`stub`相关
         if (stub != null) {
             if ("true".equals(stub)) {
                 stub = interfaceName + "Stub";
@@ -316,10 +321,12 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         checkProtocol();
         appendProperties(this);
         checkStubAndMock(interfaceClass);
+        // 服务路径，缺省为接口名
         if (path == null || path.length() == 0) {
             path = interfaceName;
         }
         doExportUrls();
+        // qos
         ProviderModel providerModel = new ProviderModel(getUniqueServiceName(), this, ref);
         ApplicationModel.initProviderModel(getUniqueServiceName(), providerModel);
     }
@@ -371,7 +378,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
             name = "dubbo";
         }
 
-
+        //将 side dubbo timestamp pid 参数添加到map集合中
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.SIDE_KEY, Constants.PROVIDER_SIDE);
         map.put(Constants.DUBBO_VERSION_KEY, Version.getProtocolVersion());
@@ -379,14 +386,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (ConfigUtils.getPid() > 0) {
             map.put(Constants.PID_KEY, String.valueOf(ConfigUtils.getPid()));
         }
+        // 将各种配置对象添加到集合中
         appendParameters(map, application);
         appendParameters(map, module);
         appendParameters(map, provider, Constants.DEFAULT_KEY);
         appendParameters(map, protocolConfig);
         appendParameters(map, this);
+        // 将MethodConfig对象添加到map中
         if (methods != null && !methods.isEmpty()) {
             for (MethodConfig method : methods) {
                 appendParameters(map, method, method.getName());
+                // 配置了MethodConfig.retry时，强制禁用重试
                 String retryKey = method.getName() + ".retry";
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
@@ -394,6 +404,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
+                // 将ArgumentConfig 对象中的数组，添加到`map`集合中
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (arguments != null && !arguments.isEmpty()) {
                     for (ArgumentConfig argument : arguments) {
@@ -408,6 +419,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                     if (methodName.equals(method.getName())) {
                                         Class<?>[] argtypes = methods[i].getParameterTypes();
                                         // one callback in the method
+                                        // 指定单个参数位置+类型
                                         if (argument.getIndex() != -1) {
                                             if (argtypes[argument.getIndex()].getName().equals(argument.getType())) {
                                                 appendParameters(map, argument, method.getName() + "." + argument.getIndex());
@@ -429,6 +441,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                                     }
                                 }
                             }
+                        // 指定单个参数的位置
                         } else if (argument.getIndex() != -1) {
                             appendParameters(map, argument, method.getName() + "." + argument.getIndex());
                         } else {
@@ -457,6 +470,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.METHODS_KEY, StringUtils.join(new HashSet<String>(Arrays.asList(methods)), ","));
             }
         }
+        // token ，参见《令牌校验》https://dubbo.gitbooks.io/dubbo-user-book/demos/token-authorization.html
         if (!ConfigUtils.isEmpty(token)) {
             if (ConfigUtils.isDefault(token)) {
                 map.put(Constants.TOKEN_KEY, UUID.randomUUID().toString());
@@ -464,6 +478,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 map.put(Constants.TOKEN_KEY, token);
             }
         }
+        // 当本地暴露时，不注册，不通知 injvm
         if (Constants.LOCAL_PROTOCOL.equals(protocolConfig.getName())) {
             protocolConfig.setRegister(false);
             map.put("notify", "false");
@@ -478,6 +493,24 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         Integer port = this.findConfigedPorts(protocolConfig, name, map);
         URL url = new URL(name, host, port, (contextPath == null || contextPath.length() == 0 ? "" : contextPath + "/") + path, map);
 
+        // 配置规则，参见《配置规则》https://dubbo.gitbooks.io/dubbo-user-book/demos/config-rule.html
+        // 向注册中心写入动态配置覆盖规则 该功能通常由监控中心或治理中心的页面完成
+        /**
+         *  override://0.0.0.0/com.foo.BarService?category=configurators&dynamic=false&application=foo&timeout=1000
+         *
+         * override:// 表示数据采用覆盖方式，支持 override 和 absent，可扩展，必填。
+         * 0.0.0.0 表示对所有 IP 地址生效，如果只想覆盖某个 IP 的数据，请填入具体 IP，必填。
+         * com.foo.BarService 表示只对指定服务生效，必填。
+         * category=configurators 表示该数据为动态配置类型，必填。
+         * dynamic=false 表示该数据为持久数据，当注册方退出时，数据依然保存在注册中心，必填。
+         * enabled=true 覆盖规则是否生效，可不填，缺省生效。
+         * application=foo 表示只对指定应用生效，可不填，表示对所有应用生效。
+         * timeout=1000 表示将满足以上条件的 timeout 参数的值覆盖为 1000。如果想覆盖其它参数，直接加在 override 的 URL 参数上。
+         *
+         * 说白了，最后的1000才是覆盖的重点，同样可以条件权重。random等等
+         * 如：weight=200，loadbalance=leastactive，mock=force:return+null（服务降级）
+         *
+         */
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
                 .hasExtension(url.getProtocol())) {
             url = ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -543,7 +576,8 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
     }
 
     /**
-     *  本地服务暴露
+     * 本地服务暴露
+     *
      * @param url
      */
     @SuppressWarnings({"unchecked", "rawtypes"})

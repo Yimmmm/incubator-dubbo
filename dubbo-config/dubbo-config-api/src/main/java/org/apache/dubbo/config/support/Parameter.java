@@ -52,6 +52,7 @@ public @interface Parameter {
 
     /**
      * 是否为属性
+     * 目前用于《事件通知》 https://dubbo.gitbooks.io/dubbo-user-book/demos/events-notify.html
      */
     boolean attribute() default false;
 

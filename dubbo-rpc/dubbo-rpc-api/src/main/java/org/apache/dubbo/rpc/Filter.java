@@ -20,17 +20,18 @@ import org.apache.dubbo.common.extension.SPI;
 
 /**
  * Filter. (SPI, Singleton, ThreadSafe)
+ * 过滤器接口
  */
 @SPI
 public interface Filter {
 
     /**
-     * do invoke filter.
+     * do invoke filter.  自己的过滤器
      * <p>
      * <code>
-     * // before filter
+     * // before filter 前置
      * Result result = invoker.invoke(invocation);
-     * // after filter
+     * // after filter 后置
      * return result;
      * </code>
      *

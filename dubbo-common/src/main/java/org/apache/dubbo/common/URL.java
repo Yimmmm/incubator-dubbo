@@ -90,14 +90,17 @@ public /**final**/ class URL implements Serializable {
     /**
      * 地址
      */
-    // by default, host to registry
+    // by default, host to registry@Parameter
     private final String host;
 
-    // by default, port to registry
+    //  by default, port to registry
     private final int port;
-
+    // 路径
     private final String path;
 
+    /**
+     * 参数集合
+     */
     private final Map<String, String> parameters;
 
     // ==== cache ====

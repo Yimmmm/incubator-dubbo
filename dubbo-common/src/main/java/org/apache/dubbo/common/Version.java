@@ -96,6 +96,7 @@ public final class Version {
         }
     }
 
+    // 从MANIFEST.MF 获得版本号，如果没有使用默认 DEFAULT_DUBBO_PROTOCOL_VERSION
     public static String getVersion(Class<?> cls, String defaultVersion) {
         try {
             // find version info from MANIFEST.MF first

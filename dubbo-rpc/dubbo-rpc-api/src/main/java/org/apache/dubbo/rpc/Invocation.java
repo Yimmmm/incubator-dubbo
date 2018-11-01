@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
- *
+ * Invocation 是会话域，它持有调用过程中的变量，比如方法名，参数等
  * @serial Don't change the class name and package name.
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see org.apache.dubbo.rpc.RpcInvocation
@@ -37,7 +37,7 @@ public interface Invocation {
 
     /**
      * get parameter types.
-     *
+     * 获得方法参数类型数组
      * @return parameter types.
      * @serial
      */
@@ -61,7 +61,8 @@ public interface Invocation {
 
     /**
      * get attachment by key.
-     *
+     *  setAttachment 设置的 KV 对，在完成下面一次远程调用会被清空，即多次远程调用要多次设置。
+     *  隐式传参，后面的远程调用都会隐式将这些参数发送到服务器端，类似cookie，用于框架集成，不建议常规业务使用
      * @return attachment value.
      * @serial
      */
