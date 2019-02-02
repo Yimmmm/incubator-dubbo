@@ -29,13 +29,20 @@ import java.util.List;
 
 /**
  * ListenerInvoker
+ * 具有监听器功能的 Invoker 包装器
  */
 public class ListenerInvokerWrapper<T> implements Invoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(ListenerInvokerWrapper.class);
 
+    /**
+     * 真实的 Invoker 对象
+     */
     private final Invoker<T> invoker;
 
+    /**
+     * Invoker 监听器数组
+     */
     private final List<InvokerListener> listeners;
 
     public ListenerInvokerWrapper(Invoker<T> invoker, List<InvokerListener> listeners) {
@@ -45,9 +52,12 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         this.invoker = invoker;
         this.listeners = listeners;
         if (listeners != null && !listeners.isEmpty()) {
+            // 执行监听器
             for (InvokerListener listener : listeners) {
                 if (listener != null) {
                     try {
+                        // 执行监听器，只打印异常，不抛出
+                        // 服务暴露的时候封装异常，最后返回
                         listener.referred(invoker);
                     } catch (Throwable t) {
                         logger.error(t.getMessage(), t);

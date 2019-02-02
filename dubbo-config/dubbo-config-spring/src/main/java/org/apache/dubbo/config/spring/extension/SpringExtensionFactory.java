@@ -28,6 +28,27 @@ import org.springframework.context.ApplicationContext;
 
 /**
  * SpringExtensionFactory
+ *
+ * 例子
+ *public class DemoFilter implements Filter {
+ *
+ *     private DemoDAO demoDAO;
+ *
+ *     @Override
+ *     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+ *         return invoker.invoke(invocation);
+ *     }
+ *
+ *     public DemoFilter setDemoDAO(DemoDAO demoDAO) {
+ *         this.demoDAO = demoDAO;
+ *         return this;
+ *     }
+ * }
+ *
+ * 在 「4.4.3 injectExtension」 中，会调用 #setDemoDAO(demo) 方法，将 DemoFilter 依赖的属性 demoDAO 注入
+ *
+ *
+ *
  */
 public class SpringExtensionFactory implements ExtensionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
@@ -56,6 +77,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
             return null;
         }
 
+        // 从Spring容器中按照名字进行Bean查询
         for (ApplicationContext context : contexts) {
             if (context.containsBean(name)) {
                 Object bean = context.getBean(name);
@@ -67,11 +89,14 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
         logger.warn("No spring extension(bean) named:" + name + ", try to find an extension(bean) of type " + type.getName());
 
+        // 如果按照名字没有找到，则按照类型查找
         for (ApplicationContext context : contexts) {
             try {
                 return context.getBean(type);
+             // 多个Bean
             } catch (NoUniqueBeanDefinitionException multiBeanExe) {
                 throw multiBeanExe;
+             // 没有找到
             } catch (NoSuchBeanDefinitionException noBeanExe) {
                 if (logger.isDebugEnabled()) {
                     logger.debug("Error when get spring extension(bean) for type:" + type.getName(), noBeanExe);

@@ -23,6 +23,9 @@ import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 
+/**
+ * ，JVM 工具类。目前，仅有 JStack 功能
+ */
 public class JVMUtil {
     public static void jstack(OutputStream stream) throws Exception {
         ThreadMXBean threadMxBean = ManagementFactory.getThreadMXBean();
@@ -31,6 +34,23 @@ public class JVMUtil {
         }
     }
 
+    /**
+     * 123312:tmp xxx$ cat Dubbo_JStack.log.2018-03-27_18\:57\:32
+     * "pool-2-thread-1" Id=11 RUNNABLE
+     * 	at sun.management.ThreadImpl.dumpThreads0(Native Method)
+     * 	at sun.management.ThreadImpl.dumpAllThreads(ThreadImpl.java:454)
+     * 	at com.alibaba.dubbo.common.utils.JVMUtil.jstack(JVMUtil.java:34)
+     * 	at com.alibaba.dubbo.common.threadpool.support.AbortPolicyWithReport$1.run(AbortPolicyWithReport.java:122)
+     * 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1142)
+     * 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:617)
+     * 	at java.lang.Thread.run(Thread.java:745)
+     *
+     * 	Number of locked synchronizers = 1
+     * 	- java.util.concurrent.ThreadPoolExecutor$Worker@5cbc508c
+     *
+     * @param threadInfo
+     * @return
+     */
     private static String getThreadDumpString(ThreadInfo threadInfo) {
         StringBuilder sb = new StringBuilder("\"" + threadInfo.getThreadName() + "\"" +
                 " Id=" + threadInfo.getThreadId() + " " +

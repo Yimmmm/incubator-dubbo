@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 /**
  * NamedInternalThreadFactory
+ * 用于生成线程名
  * This is a threadFactory which produce {@link InternalThread}
  */
 public class NamedInternalThreadFactory extends NamedThreadFactory {

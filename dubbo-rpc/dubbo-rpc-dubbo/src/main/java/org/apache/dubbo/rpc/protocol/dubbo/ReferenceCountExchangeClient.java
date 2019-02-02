@@ -36,10 +36,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
+    /**
+     * 指向数量
+     */
     private final AtomicInteger refenceCount = new AtomicInteger(0);
 
     //    private final ExchangeHandler handler;
+    // 幽灵客户端集合
     private final ConcurrentMap<String, LazyConnectExchangeClient> ghostClientMap;
+    // 客户端
     private ExchangeClient client;
 
 
@@ -154,6 +159,7 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
             } else {
                 client.close(timeout);
             }
+            // 替换 `client` 为 LazyConnectExchangeClient 对象
             client = replaceWithLazyClient();
         }
     }
@@ -167,15 +173,16 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     private LazyConnectExchangeClient replaceWithLazyClient() {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(Constants.LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.FALSE)
-                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE)
+                .addParameter(Constants.RECONNECT_KEY, Boolean.FALSE) // 是否重连
                 .addParameter(Constants.SEND_RECONNECT_KEY, Boolean.TRUE.toString())
                 .addParameter("warning", Boolean.TRUE.toString())
                 .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true)
-                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient");
+                .addParameter("_client_memo", "referencecounthandler.replacewithlazyclient"); // 备注
 
         String key = url.getAddress();
         // in worst case there's only one ghost connection.
         LazyConnectExchangeClient gclient = ghostClientMap.get(key);
+        // 创建 LazyConnectExchangeClient 对象，若不存在
         if (gclient == null || gclient.isClosed()) {
             gclient = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
             ghostClientMap.put(key, gclient);

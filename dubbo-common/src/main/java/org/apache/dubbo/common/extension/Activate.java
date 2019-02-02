@@ -28,6 +28,8 @@ import java.lang.annotation.Target;
  * Activate. This annotation is useful for automatically activate certain extensions with the given criteria,
  * for examples: <code>@Activate</code> can be used to load certain <code>Filter</code> extension when there are
  * multiple implementations.
+ *
+ * 当有多个继承的时候，用@Activate标明是哪个继承方法启用
  * <ol>
  * <li>{@link Activate#group()} specifies group criteria. Framework SPI defines the valid group values.
  * <li>{@link Activate#value()} specifies parameter key in {@link URL} criteria.
@@ -46,7 +48,7 @@ public @interface Activate {
     /**
      * Activate the current extension when one of the groups matches. The group passed into
      * {@link ExtensionLoader#getActivateExtension(URL, String, String)} will be used for matching.
-     *
+     * Group过滤条件。
      * @return group names to match
      * @see ExtensionLoader#getActivateExtension(URL, String, String)
      */
@@ -58,7 +60,7 @@ public @interface Activate {
      * For example, given <code>@Activate("cache, validation")</code>, the current extension will be return only when
      * there's either <code>cache</code> or <code>validation</code> key appeared in the URL's parameters.
      * </p>
-     *
+     * Key过滤条件。包含{@link ExtensionLoader#getActivateExtension}的URL的参数Key中有，则返回扩展。
      * @return URL parameter keys
      * @see ExtensionLoader#getActivateExtension(URL, String)
      * @see ExtensionLoader#getActivateExtension(URL, String, String)
@@ -67,21 +69,21 @@ public @interface Activate {
 
     /**
      * Relative ordering info, optional
-     *
+     *  排序信息，可以不提供
      * @return extension list which should be put before the current one
      */
     String[] before() default {};
 
     /**
      * Relative ordering info, optional
-     *
+     *  排序信息，可以不提供
      * @return extension list which should be put after the current one
      */
     String[] after() default {};
 
     /**
      * Absolute ordering info, optional
-     *
+     *  排序信息，可以不提供
      * @return absolute ordering info
      */
     int order() default 0;

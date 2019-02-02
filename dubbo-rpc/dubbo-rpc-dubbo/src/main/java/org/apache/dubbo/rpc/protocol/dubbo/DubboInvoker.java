@@ -50,8 +50,15 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
 
     private final String version;
 
+    /**
+     * 锁销毁
+     *  在 {@link #destroy()} 中使用
+     */
     private final ReentrantLock destroyLock = new ReentrantLock();
 
+    /**
+     * Invoker 集合，从 {@link DubboProtocol#invokers} 获取
+     */
     private final Set<Invoker<?>> invokers;
 
     public DubboInvoker(Class<T> serviceType, URL url, ExchangeClient[] clients) {

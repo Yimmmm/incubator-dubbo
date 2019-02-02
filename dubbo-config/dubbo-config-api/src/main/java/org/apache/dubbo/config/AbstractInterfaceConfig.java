@@ -197,6 +197,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                         }
                     }
                     // 如果缺省设置默认URL属性
+                    // 其实就是根据各种参数设置了List<URL> ,然后添加到注册中心中
                     List<URL> urls = UrlUtils.parseURLs(address, map);
                     for (URL url : urls) {
                         // registry=protocol
@@ -243,6 +244,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
         }
+        // 直连监控中心服务器地址
         if (ConfigUtils.isNotEmpty(address)) {
             if (!map.containsKey(Constants.PROTOCOL_KEY)) {
                 if (ExtensionLoader.getExtensionLoader(MonitorFactory.class).hasExtension("logstat")) {
@@ -252,6 +254,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 }
             }
             return UrlUtils.parseURL(address, map);
+        // 从注册中心发现监控中心地址
         } else if (Constants.REGISTRY_PROTOCOL.equals(monitor.getProtocol()) && registryURL != null) {
             return registryURL.setProtocol("dubbo").addParameter(Constants.PROTOCOL_KEY, "registry").addParameterAndEncoded(Constants.REFER_KEY, StringUtils.toQueryString(map));
         }

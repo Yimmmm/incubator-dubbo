@@ -25,6 +25,12 @@ import org.apache.dubbo.rpc.RpcException;
 
 /**
  * DeprecatedProtocolFilter
+ * 实现 InvokerListenerAdapter 抽象类 ，引用废弃的服务时，打印错误日志提醒。代码如下：
+ *
+ * 当服务 远程方法  deprecated=true ，则在refer()中打印错误日志
+ * <dubbo:reference id="demoService" interface="org.apache.dubbo.demo.DemoService" protocol="injvm">
+ *     <dubbo:parameter key="deprecated" value="true" />
+ * </dubbo:reference>
  */
 @Activate(Constants.DEPRECATED_KEY)
 public class DeprecatedInvokerListener extends InvokerListenerAdapter {

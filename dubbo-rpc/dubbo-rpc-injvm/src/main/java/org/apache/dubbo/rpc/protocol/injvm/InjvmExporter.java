@@ -33,7 +33,7 @@ class InjvmExporter<T> extends AbstractExporter<T> {
      *
      *  key 服务键
      *
-     *  该值实际就是{{@link com.alibaba.dubbo.rpc.protocol.AbstractProtocol#exporterMap}}
+     *  该值实际就是{{@link org.apache.dubbo.rpc.protocol.AbstractProtocol#exporterMap}}
      */
     private final Map<String, Exporter<?>> exporterMap;
 

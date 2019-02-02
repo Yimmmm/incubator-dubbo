@@ -31,6 +31,16 @@ import java.util.concurrent.TimeUnit;
 /**
  * Creates a thread pool that reuses a fixed number of threads
  *
+ *
+ * <dubbo:service interface="com.alibaba.dubbo.demo.DemoService" ref="demoService">
+ *
+ *     <dubbo:parameter key="threadname" value="shuaiqi" />
+ *     <dubbo:parameter key="threads" value="123" />
+ *     <dubbo:parameter key="queues" value="10" />
+ *
+ * </dubbo:service>
+ *
+ *
  * @see java.util.concurrent.Executors#newFixedThreadPool(int)
  */
 public class FixedThreadPool implements ThreadPool {

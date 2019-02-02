@@ -46,8 +46,10 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private static volatile long lastPrintTime = 0;
 
+    // 信号量
     private static Semaphore guard = new Semaphore(1);
 
+    // 用于当任务添加到线程池中被拒绝时的策略
     public AbortPolicyWithReport(String threadName, URL url) {
         this.threadName = threadName;
         this.url = url;
@@ -66,6 +68,9 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
         throw new RejectedExecutionException(msg);
     }
 
+    /**
+     * 打印 JStack,分析线程状态
+     */
     private void dumpJStack() {
         long now = System.currentTimeMillis();
 
@@ -78,6 +83,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             return;
         }
 
+        // 创建线程池，后台执行打印 JStack
         Executors.newSingleThreadExecutor().execute(new Runnable() {
             @Override
             public void run() {
@@ -111,7 +117,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                         }
                     }
                 }
-
+                // 记录最后打印时间
                 lastPrintTime = System.currentTimeMillis();
             }
         });

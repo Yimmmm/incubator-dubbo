@@ -45,11 +45,17 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
     protected final boolean requestWithWarning;
     private final URL url;
+
     private final ExchangeHandler requestHandler;
+    /**
+     * 连接锁🔐
+     */
     private final Lock connectLock = new ReentrantLock();
     // lazy connect, initial state for connection
     private final boolean initialState;
+    // 通信客户端
     private volatile ExchangeClient client;
+    // 请求时，是否检查告警
     private AtomicLong warningcount = new AtomicLong(0);
 
     public LazyConnectExchangeClient(URL url, ExchangeHandler requestHandler) {
@@ -69,8 +75,10 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         }
         connectLock.lock();
         try {
+            // 已经创建
             if (client != null)
                 return;
+            // 创建客户端，连接服务器
             this.client = Exchangers.connect(url, requestHandler);
         } finally {
             connectLock.unlock();
@@ -107,7 +115,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     /**
      * If {@link #REQUEST_WITH_WARNING_KEY} is configured, then warn once every 5000 invocations.
-     *
+     * 警告计数器。每超过一定次数，打印告警日志。每次发送请求时，会调用 #warning(request) 方法，根据情况，打印告警日志。代码如下：
      * @param request
      */
     private void warning(Object request) {
@@ -148,6 +156,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         return requestHandler;
     }
 
+    /**
+     * 发送消息/请求前，都会调用该方法，保证客户端已经初始化
+     * @param message
+     * @throws RemotingException
+     */
     @Override
     public void send(Object message) throws RemotingException {
         initClient();

@@ -58,6 +58,9 @@ public class ProtocolFilterWrapper implements Protocol {
          /*
          * 倒序循环Filter，创建带Filter链的对象
          * 倒序的原因：循环嵌套{3{2{1}}}
+         * 倒序循环 Filter ，创建带 Filter 链的 Invoker 对象。因为是通过嵌套声明匿名类循环调用的方式，所以要倒序
+         *
+         * 服务暴露和引用使用的是相同的逻辑，只是分组不相同 group = consumer | provider
          */
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
@@ -108,18 +111,23 @@ public class ProtocolFilterWrapper implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
          // 注册中心
+        // invoker.url.protocl = registry TODO WHY ?
+        // 地暴露服务不会符合这个判断。在远程暴露服务会符合暴露该判断,本地服务应该是injvm
         if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
             return protocol.export(invoker);
         }
-        // 先创建过滤链，再暴露服务
+        // 建立带有 Filter 过滤链的 Invoker ，再暴露服务。
         return protocol.export(buildInvokerChain(invoker, Constants.SERVICE_FILTER_KEY, Constants.PROVIDER));
     }
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        // 注册中心直接返回
         if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
             return protocol.refer(type, url);
         }
+        // 引用服务，返回 Invoker 对象
+        // 给改 Invoker 对象，包装成带有 Filter 过滤链的 Invoker 对象
         return buildInvokerChain(protocol.refer(type, url), Constants.REFERENCE_FILTER_KEY, Constants.CONSUMER);
     }
 
